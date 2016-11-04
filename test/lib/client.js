@@ -39,6 +39,27 @@ describe('magnolia-rest', function() {
     });
   });
 
+  describe('#save', function() {
+    it('should update properties', function() {
+      return this.client.getNode('/test-page')
+        .then(node => {
+          node.setProperty('testProp', 'this is a test');
+          return this.client.save(node);
+        })
+        .then(() => this.client.getNode('/test-page'))
+        .then(node => node.getProperty('testProp').should.equal('this is a test'));
+    });
+    it('should delete properties', function() {
+      return this.client.getNode('/test-page')
+        .then(node => {
+          node.deleteProperty('testProp');
+          return this.client.save(node);
+        })
+        .then(() => this.client.getNode('/test-page'))
+        .then(node => should(node.getProperty('testProp')).not.be.ok());
+    });
+  });
+
   describe('#deleteNode', function() {
     it('should delete node', function() {
       return this.client.deleteNode('/test-page')
