@@ -30,7 +30,7 @@ describe('magnolia-rest', function() {
   describe('#createPage', function() {
     it('should create and return a page', function() {
       return this.client.createPage('/test-page')
-        .then(node => console.dir(node));
+        .then(node => console.dir(node.toMagnoliaNode()));
     });
 
     it('should automatically create missing parent pages', function() {
