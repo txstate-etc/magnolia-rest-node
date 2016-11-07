@@ -1,5 +1,6 @@
 const MagnoliaRest = require('../../index');
 const Magnolia = MagnoliaRest.Client;
+const Node = MagnoliaRest.Node;
 const Errors = require('../../lib/errors');
 const should = require('should');
 
@@ -20,26 +21,22 @@ describe('magnolia-rest', function() {
   describe('#getNode', function() {
     it('should return a page', function() {
       return this.client.getNode('Normal', {depth: 0})
-        .then(node => {
-          console.dir(node);
-          console.dir(node.toMagnoliaNode());
-        });
+        .then(console.dir);
     });
   });
 
   describe('#createPage', function() {
-    it('should create and return a page', function() {
-      return this.client.createPage('/test-page')
-        .then(node => console.dir(node.toMagnoliaNode()));
-    });
-
     it('should automatically create missing parent pages', function() {
-      return this.client.createPage('/parents/dont/exist')
-        .then(node => console.dir(node));
+      return this.client.createPage(Node.newPage('/parents/dont/exist'))
+        .then(node => node.name.should.equal('exist'));
     });
   });
 
   describe('#save', function() {
+    it('should create a new node', function() {
+      return this.client.save(Node.newPage('/test-page'))
+        .then(node => node.name.should.equal('test-page'));
+    });
     it('should update properties', function() {
       return this.client.getNode('/test-page')
         .then(node => {
@@ -58,6 +55,13 @@ describe('magnolia-rest', function() {
         .then(() => this.client.getNode('/test-page'))
         .then(node => should(node.getProperty('testProp')).not.be.ok());
     });
+    it('should create nodes recursively', function() {
+      let page = Node.newPage('/create-levels');
+      page.nodes.push(Node.newArea('/create-levels/contentParagraph'));
+      return this.client.save(page)
+        .then(() => this.client.getNode('/create-levels/contentParagraph'))
+        .then(node => node.name.should.equal('contentParagraph'));
+    });
   });
 
   describe('#deleteNode', function() {
@@ -72,6 +76,7 @@ describe('magnolia-rest', function() {
   });
 
   after(function() {
-    return this.client.deleteNode('/parents');
+    return this.client.deleteNode('/parents')
+      .then(() => this.client.deleteNode('/create-levels'));
   });
 });
