@@ -1,6 +1,7 @@
 const Magnolia = require('../../index');
 const Errors = require('../../lib/errors');
 const should = require('should');
+const fs = require('fs');
 
 const options = {
   basePath: 'http://localhost:8080/.rest',
@@ -87,6 +88,37 @@ describe('magnolia-rest', function() {
 
     after(function() {
       return this.magnolia.node('/website/parents').delete();
+    });
+  });
+
+  describe('asset', function() {
+    it('should create image asset', function() {
+      let buffer = fs.readFileSync('/Users/Chris/GitHub/tracs-documentation/images/How-are-grades-calculated-in-Gradebook-/Assignment-is-worth-50-points.png');
+      let opts = {
+        name: 'assignment',
+        type: 'png',
+        fileName: 'assignment.png',
+        mimeType: 'image/png',
+        data: buffer
+      };
+      let asset = this.magnolia.asset('/dam/assignment', opts);
+      return asset.create()
+        .then(() => this.magnolia.node('/dam/assignment').get())
+        .then(node => node.name.should.equal('assignment'));
+    });
+
+    after(function() {
+      return this.magnolia.node('/dam/assignment').delete();
+    });
+  });
+
+  describe('gatoPage', function() {
+    it('should create row with single column', function() {
+      let page = this.magnolia.gatoPage('/website/gatoPage');
+      should(page.nodes.contentParagraph).be.ok();
+      should(page.nodes.contentParagraph.nodes['0']).be.ok();
+      should(page.nodes.contentParagraph.nodes['0'].nodes.column1).be.ok();
+      return page.create();
     });
   });
 });
