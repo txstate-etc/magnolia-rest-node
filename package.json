@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^3.4.6",
+    "lwip": "0.0.9",
     "node-fetch": "^1.6.3"
   },
   "devDependencies": {

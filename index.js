@@ -2,6 +2,8 @@ const Promise = require("bluebird");
 const Client = require('./lib/client');
 const Node = require('./lib/node');
 const types = require('./lib/node-types');
+const fs = Promise.promisifyAll(require('fs'));
+const lwip = Promise.promisifyAll(require('lwip'));
 
 function Magnolia(options) {
   this.client = new Client(options);
@@ -35,8 +37,34 @@ Magnolia.prototype.asset = function(path, options) {
   return new types.Asset(this.client, path, options);
 }
 
-Magnolia.prototype.png = function(path, image, buffer) {
-
+Magnolia.prototype.image = function(path, file, type) {
+  if (!type) {
+    type = file.slice(file.lastIndexOf('.') + 1);
+  }
+  let buffer, size;
+  return fs.readFileAsync(file)
+    .then(b => {
+      buffer = b;
+    })
+    .then(() => fs.statAsync(file))
+    .then(stats => {
+      size = stats.size;
+      return lwip.openAsync(file, type);
+    })
+    .then(image => {
+      let asset = this.asset(path, {
+        type: type,
+        fileName: file,
+        mimeType: `image/${type}`,
+        data: buffer
+      });
+      asset.down('jcr:content').setProperties({
+        width: image.width(),
+        height: image.height(),
+        size: size
+      });
+      return asset;
+    });
 }
 module.exports = Magnolia;
 

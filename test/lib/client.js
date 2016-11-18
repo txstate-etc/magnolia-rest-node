@@ -7,7 +7,6 @@ const options = {
   basePath: 'http://localhost:8080/.rest',
   user: 'superuser',
   password: 'superuser',
-  workspace: 'website',
   depth: 1
 };
 
@@ -95,7 +94,6 @@ describe('magnolia-rest', function() {
     it('should create image asset', function() {
       let buffer = fs.readFileSync('/Users/Chris/GitHub/tracs-documentation/images/How-are-grades-calculated-in-Gradebook-/Assignment-is-worth-50-points.png');
       let opts = {
-        name: 'assignment',
         type: 'png',
         fileName: 'assignment.png',
         mimeType: 'image/png',
@@ -109,6 +107,14 @@ describe('magnolia-rest', function() {
 
     after(function() {
       return this.magnolia.node('/dam/assignment').delete();
+    });
+  });
+
+  describe('#image', function() {
+    it('should create an image asset', function() {
+      let file = '/Users/Chris/GitHub/tracs-documentation/images/How-are-grades-calculated-in-Gradebook-/Assignment-is-worth-50-points.png';
+      return this.magnolia.image('/dam/magnolia-rest-node/test/image.png', file, 'png')
+        .then(image => image.create());
     });
   });
 
